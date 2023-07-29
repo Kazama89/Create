@@ -1,0 +1,96 @@
+import sqlite3
+
+def criar_tabela():
+    conexao = sqlite3.connect('banco_de_dados.db')
+    cursor = conexao.cursor()
+
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS produtos (
+            id INTEGER PRIMARY KEY,
+            nome TEXT NOT NULL,
+            descricao TEXT,
+            valor REAL NOT NULL
+        )
+    ''')
+
+    conexao.commit()
+    conexao.close()
+
+def adicionar_produto(nome, descricao, valor):
+    conexao = sqlite3.connect('banco_de_dados.db')
+    cursor = conexao.cursor()
+
+    cursor.execute('INSERT INTO produtos (nome, descricao, valor) VALUES (?, ?, ?)', (nome, descricao, valor))
+
+    conexao.commit()
+    conexao.close()
+
+def editar_produto(id_produto, nome, descricao, valor):
+    conexao = sqlite3.connect('banco_de_dados.db')
+    cursor = conexao.cursor()
+
+    cursor.execute('UPDATE produtos SET nome = ?, descricao = ?, valor = ? WHERE id = ?', (nome, descricao, valor, id_produto))
+
+    conexao.commit()
+    conexao.close()
+
+def listar_produtos(nome=None):
+    conexao = sqlite3.connect('banco_de_dados.db')
+    cursor = conexao.cursor()
+
+    if nome is None:
+        cursor.execute('SELECT * FROM produtos')
+    else:
+        cursor.execute('SELECT * FROM produtos WHERE nome LIKE ?', (f'%{nome}%',))
+
+    produtos = cursor.fetchall()
+
+    for produto in produtos:
+        print(f'ID: {produto[0]}')
+        print(f'Nome: {produto[1]}')
+        print(f'Descrição: {produto[2]}')
+        print(f'Valor: R$ {produto[3]:.2f}')
+        print('--------------------------')
+
+    conexao.close()
+
+def menu():
+    while True:
+        print("========= MENU =========")
+        print("1 - Adicionar Produto")
+        print("2 - Editar Produto")
+        print("3 - Listar Produtos")
+        print("4 - Pesquisar Produto por Nome")
+        print("0 - Sair")
+
+        opcao = int(input("Digite a opção desejada: "))
+
+        if opcao == 1:
+            nome = input("Digite o nome do produto: ")
+            descricao = input("Digite a descrição do produto: ")
+            valor = float(input("Digite o valor do produto: "))
+            adicionar_produto(nome, descricao, valor)
+            print("Produto adicionado com sucesso!")
+        elif opcao == 2:
+            id_produto = int(input("Digite o ID do produto que deseja editar: "))
+            nome = input("Digite o novo nome do produto: ")
+            descricao = input("Digite a nova descrição do produto: ")
+            valor = float(input("Digite o novo valor do produto: "))
+            editar_produto(id_produto, nome, descricao, valor)
+            print("Produto editado com sucesso!")
+        elif opcao == 3:
+            print("======== LISTA DE PRODUTOS =======")
+            listar_produtos()
+        elif opcao == 4:
+            nome = input("Digite o nome do produto que deseja pesquisar: ")
+            print("======== RESULTADO DA PESQUISA =======")
+            listar_produtos(nome)
+        elif opcao == 0:
+            print("Encerrando o programa...")
+            break
+        else:
+            print("Opção inválida!")
+
+if __name__ == "__main__":
+    criar_tabela()
+    menu()
